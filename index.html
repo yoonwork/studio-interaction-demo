@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>스튜디오 사이트 인터랙션 데모</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{--bg:#f4f2ee;--ink:#111;--ink-2:#555;--line:#d9d5ce;--accent:#111;color-scheme:light}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Inter Tight",Pretendard,-apple-system,"Apple SD Gothic Neo",sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:inherit}
+[hidden]{display:none!important}
+
+/* 데모 안내 */
+body{padding-bottom:64px}
+.demobar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:#1d1d1d;color:#d6d3cd;font-family:Pretendard,sans-serif;font-size:12.5px;padding:7px 16px;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.demobar b{background:#e9d16b;color:#111;border-radius:4px;padding:1px 7px;font-size:11.5px}
+.demobar label{display:inline-flex;gap:5px;align-items:center;cursor:pointer}
+.demobar .admin-link{margin-left:auto;color:#fff;background:#3a3a3a;border:0;border-radius:6px;padding:4px 10px;font-size:12px}
+
+/* 고정 로고: 겹치는 이미지·글자 위에서 '제외(exclusion)'로 색이 반전 */
+.logo{position:fixed;left:24px;top:16px;z-index:20;font-weight:900;font-size:clamp(28px,5.2vw,76px);letter-spacing:-.04em;line-height:.9;color:#fff;mix-blend-mode:exclusion;pointer-events:none;user-select:none}
+.logo small{display:block;font-size:.22em;letter-spacing:.2em;font-weight:500;margin-top:6px}
+
+/* 상단 메뉴 */
+.nav{position:sticky;top:0;z-index:15;display:flex;justify-content:flex-end;gap:22px;padding:16px 24px;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#fff;mix-blend-mode:difference}
+.nav button{border:0;background:none;padding:0;letter-spacing:inherit;text-transform:inherit;font-weight:500;opacity:.6;color:inherit}
+.nav button.on{opacity:1;text-decoration:underline;text-underline-offset:5px}
+
+.page[hidden]{display:none}
+.wrap{padding:0 24px 80px}
+
+/* HOME */
+.hero{position:relative;height:calc(100vh - 90px);min-height:420px;margin:0 24px;overflow:hidden;background:#cfc8bd}
+.hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1.2s}
+.hero img.on{opacity:1}
+.hero .cap{position:absolute;right:20px;bottom:18px;color:#fff;font-size:12px;letter-spacing:.15em;mix-blend-mode:difference}
+.home-text{display:grid;grid-template-columns:1fr 1fr;gap:24px;padding:40px 24px 80px;font-size:clamp(20px,2.4vw,34px);line-height:1.15;letter-spacing:-.02em}
+.home-text p{margin:0}
+.home-text .s{font-size:14px;letter-spacing:0;line-height:1.6;color:var(--ink-2);align-self:end}
+
+/* ABOUT: PPM 루프 */
+.about-top{padding:140px 24px 30px;max-width:900px;font-size:clamp(20px,2.4vw,32px);line-height:1.2;letter-spacing:-.02em}
+.marquee{overflow:hidden;white-space:nowrap;border-top:1px solid var(--ink);padding:10px 0}
+.marquee:last-of-type{border-bottom:1px solid var(--ink)}
+.track{display:inline-flex;font-weight:900;font-size:clamp(40px,8vw,120px);letter-spacing:-.04em;line-height:1;animation:toLeft 26s linear infinite}
+.track span{padding-right:.4em}
+.marquee.right .track{animation-name:toRight}
+@keyframes toLeft{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes toRight{from{transform:translateX(-50%)}to{transform:translateX(0)}}
+.film{display:grid;grid-template-columns:1fr 1.2fr;gap:24px;padding:60px 24px;align-items:center}
+.film-box{position:relative;aspect-ratio:4/5;background:#cfc8bd;overflow:hidden}
+.film-box img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0}
+.film-box img.on{opacity:1}
+.film-box .tag{position:absolute;left:10px;top:10px;font-size:11px;letter-spacing:.15em;color:#fff;mix-blend-mode:difference}
+.film h3{font-size:13px;letter-spacing:.15em;margin:0 0 10px}
+.film p{color:var(--ink-2);margin:0 0 10px;font-family:Pretendard,sans-serif}
+
+/* ARCHIVE: 7열, 가로 고정·세로는 원본 비율 */
+.arch-head{padding:140px 24px 18px;display:flex;justify-content:space-between;align-items:end;gap:10px;flex-wrap:wrap}
+.arch-head h2{margin:0;font-size:13px;letter-spacing:.15em;font-weight:500}
+.arch-head p{margin:0;font-size:12.5px;color:var(--ink-2);font-family:Pretendard,sans-serif}
+.masonry{display:grid;grid-template-columns:repeat(var(--cols,7),minmax(0,1fr));gap:10px;padding:0 24px 80px;align-items:start}
+.col{display:grid;gap:10px}
+.tile{position:relative;display:block;width:100%;border:0;padding:0;background:var(--c,#ccc);overflow:hidden;cursor:pointer;transition:background .3s}
+.tile img{display:block;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .6s}
+.tile img.ok{opacity:1}
+.tile .t{position:absolute;left:6px;bottom:5px;font-size:10.5px;letter-spacing:.08em;color:#fff;mix-blend-mode:difference;opacity:0;transition:opacity .2s}
+.tile:hover .t{opacity:1}
+
+/* 상세 */
+.detail-head{padding:140px 24px 24px;display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.detail-head h2{margin:0;font-size:clamp(28px,4vw,56px);letter-spacing:-.03em;line-height:1}
+.detail-head dl{display:grid;grid-template-columns:90px 1fr;gap:4px 10px;margin:0;font-size:13px;align-self:end}
+.detail-head dt{color:var(--ink-2)}
+.detail-head dd{margin:0}
+.detail-imgs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:0 24px 40px}
+.detail-imgs .tile{cursor:default}
+.detail-imgs .tile.wide{grid-column:span 2}
+.back{margin:0 24px 80px;border:1px solid var(--ink);background:none;padding:10px 16px;font-size:12px;letter-spacing:.15em}
+
+/* CONTACT */
+.contact{display:grid;grid-template-columns:1fr 1fr;gap:40px;padding:110px 24px 80px}
+.contact h2{font-size:clamp(34px,5vw,72px);line-height:.95;letter-spacing:-.04em;margin:0 0 20px;font-weight:900}
+.contact p{color:var(--ink-2);font-family:Pretendard,sans-serif}
+.cform{display:grid;gap:14px;font-family:Pretendard,sans-serif}
+.cform label{font-size:12px;letter-spacing:.08em;color:var(--ink-2);display:grid;gap:4px}
+.cform input,.cform select,.cform textarea{border:0;border-bottom:1px solid var(--ink);background:transparent;padding:8px 0;outline:none;border-radius:0}
+.cform textarea{min-height:110px;resize:vertical}
+.cform .two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.send{justify-self:start;border:0;background:var(--ink);color:#fff;padding:12px 26px;font-size:12px;letter-spacing:.18em}
+.cmsg{font-size:13px}
+
+/* 관리자 */
+.admin{font-family:Pretendard,sans-serif;background:#fff;min-height:100vh}
+.admin-top{display:flex;align-items:center;gap:10px;padding:16px 24px;border-bottom:1px solid #eee;flex-wrap:wrap}
+.admin-top h2{margin:0;font-size:18px;flex:1}
+.atabs{display:flex;gap:4px;padding:14px 24px 0}
+.atabs button{border:1px solid #ddd;background:#fff;border-radius:999px;padding:6px 14px;font-size:13px;font-weight:600}
+.atabs button[aria-selected="true"]{background:#111;color:#fff;border-color:#111}
+.apane{padding:18px 24px 60px}
+.drop{border:2px dashed #cfcac2;border-radius:14px;padding:26px;text-align:center;color:#666;background:#faf9f7}
+.drop.over{border-color:#111;background:#f1efea}
+.drop b{color:#111}
+.agrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;margin-top:16px}
+.acard{border:1px solid #eee;border-radius:10px;overflow:hidden;background:#fff;font-size:12px}
+.acard .ph{aspect-ratio:1;background:var(--c,#ddd);display:block;width:100%;object-fit:cover}
+.acard .meta{padding:8px;display:flex;align-items:center;gap:6px}
+.acard .sw{width:14px;height:14px;border-radius:4px;border:1px solid rgba(0,0,0,.1);flex:none}
+.acard .meta span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acard .acts{display:flex;border-top:1px solid #eee}
+.acard .acts button{flex:1;border:0;background:#fff;padding:6px 0;font-size:12px}
+.acard .acts button+button{border-left:1px solid #eee}
+.acard .acts button:hover{background:#f6f6f6}
+.btn{border:0;border-radius:9px;background:#111;color:#fff;padding:9px 14px;font-weight:700;font-size:13px}
+.btn.ghost{background:#fff;color:#111;border:1px solid #ddd}
+.tablewrap{overflow-x:auto;border:1px solid #eee;border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:13px;min-width:640px}
+th,td{padding:10px 12px;border-bottom:1px solid #f0f0f0;text-align:left;vertical-align:top}
+th{background:#fafafa;color:#666;font-weight:600}
+.st{border:1px solid #ddd;border-radius:999px;padding:2px 8px;font-size:11.5px;background:#fff}
+.st.new{background:#111;color:#fff;border-color:#111}
+.note{font-size:12.5px;color:#777;margin:8px 0 0}
+.howto{max-width:820px}
+.howto h3{font-size:15px;margin:18px 0 8px}
+.howto ul{margin:0;padding-left:18px;color:#333}
+.howto li{margin:5px 0}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#111;color:#fff;padding:10px 16px;border-radius:10px;font-family:Pretendard,sans-serif;font-size:13px;z-index:40}
+
+@media (max-width:1100px){.masonry{--cols:5}}
+@media (max-width:800px){
+  .masonry{--cols:3;gap:6px;padding:0 12px 60px}.col{gap:6px}
+  .home-text,.film,.contact,.detail-head{grid-template-columns:1fr}
+  .hero{margin:0 12px;height:70vh}
+  .nav{gap:14px;padding:14px 16px;font-size:11.5px}
+  .logo{left:14px;top:12px;font-size:24px}
+  .nav{padding-top:18px}
+  .demobar{font-size:11.5px;padding:6px 12px}
+  .demobar span{display:none}
+  .wrap,.about-top,.arch-head,.film,.contact,.detail-head{padding-left:16px;padding-right:16px}
+  .about-top,.arch-head,.detail-head{padding-top:110px}
+  .detail-imgs{grid-template-columns:1fr;padding:0 12px 30px}.detail-imgs .tile.wide{grid-column:auto}
+  .cform .two{grid-template-columns:1fr}
+}
+@media (max-width:480px){.masonry{--cols:2}}
+@media (prefers-reduced-motion:reduce){.track{animation-duration:80s}}
+</style>
+</head>
+<body>
+
+<div class="demobar">
+  <b>제안용 데모</b>
+  <span>디자인은 피그마 시안이 아니라 공고의 '인터랙션 요구사항'을 구현한 예시예요. 사진은 무료 예시 이미지예요.</span>
+  <label><input type="checkbox" id="slow"> 느린 인터넷 흉내 (대표 색 상자 확인용)</label>
+  <button class="admin-link" id="toAdmin" type="button">관리자 화면 →</button>
+</div>
+
+<div class="logo" id="logo" aria-hidden="true">STUDIO<br>SAMPLE<small>FASHION PHOTOGRAPHY</small></div>
+
+<div id="site">
+  <nav class="nav" aria-label="메뉴">
+    <button data-page="home">Home</button>
+    <button data-page="about">About</button>
+    <button data-page="archive">Archive</button>
+    <button data-page="contact">Contact</button>
+  </nav>
+
+  <section class="page" id="page-home">
+    <div class="hero" id="hero"><span class="cap" id="heroCap"></span></div>
+    <div class="home-text">
+      <p>Editorial, lookbook and campaign photography for fashion labels.</p>
+      <p class="s">스크롤하면 왼쪽 위 로고가 따라와요. 로고가 사진이나 글자와 겹치면 '제외(exclusion)' 효과로 색이 반전돼요. 이 글자 위로 올려 보세요.</p>
+    </div>
+    <div class="masonry" id="homeStrip" style="--cols:4"></div>
+  </section>
+
+  <section class="page" id="page-about" hidden>
+    <div class="about-top">We build images with light, texture and silence. Studio Sample works with fashion labels on seasonal lookbooks, editorials and campaigns.</div>
+    <div class="marquee right"><div class="track" data-text="LOOKBOOK — EDITORIAL — CAMPAIGN — "></div></div>
+    <div class="marquee"><div class="track" data-text="PORTRAIT — STILL LIFE — BEAUTY — "></div></div>
+    <div class="marquee right"><div class="track" data-text="SEOUL — PARIS — TOKYO — "></div></div>
+    <div class="film">
+      <div class="film-box" id="film"><span class="tag">FILM DESIGN · AUTO PLAY</span></div>
+      <div>
+        <h3>FILM DESIGN</h3>
+        <p>공고의 'Film design: gif 자동재생' 자리예요. 실제로는 관리자에서 올린 GIF(또는 가벼운 무음 영상)가 자동으로 반복 재생돼요.</p>
+        <p>글자 띠는 1·3번째 줄이 오른쪽, 2번째 줄이 왼쪽으로 끊김 없이 흘러요. 움직임 줄이기 설정을 켠 사용자에게는 천천히 움직여요.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="page" id="page-archive" hidden>
+    <div class="arch-head"><h2>ARCHIVE</h2><p>가로 폭은 고정, 세로는 사진 원래 비율대로. 사진이 뜨기 전에는 그 사진의 대표 색으로 칠해 둬요.</p></div>
+    <div class="masonry" id="archive"></div>
+  </section>
+
+  <section class="page" id="page-detail" hidden>
+    <div class="detail-head"><h2 id="dTitle"></h2><dl id="dMeta"></dl></div>
+    <div class="detail-imgs" id="dImgs"></div>
+    <button class="back" data-page="archive" type="button">← BACK TO ARCHIVE</button>
+  </section>
+
+  <section class="page" id="page-contact" hidden>
+    <div class="contact">
+      <div>
+        <h2>LET'S<br>SHOOT<br>TOGETHER.</h2>
+        <p>이 페이지에서는 로고가 숨겨져요. 문의를 남기면 관리자 화면의 '문의 관리'에 바로 쌓여요.</p>
+      </div>
+      <form class="cform" id="cform" autocomplete="off">
+        <div class="two"><label>NAME *<input id="cName" required maxlength="40"></label><label>BRAND / COMPANY<input id="cBrand" maxlength="60"></label></div>
+        <div class="two"><label>EMAIL *<input id="cEmail" type="email" required maxlength="80"></label>
+          <label>TYPE<select id="cType"><option>Lookbook</option><option>Editorial</option><option>Campaign</option><option>Portrait</option><option>Etc.</option></select></label></div>
+        <label>SHOOT DATE<input id="cDate" type="date"></label>
+        <label>MESSAGE *<textarea id="cMsg" required maxlength="1000"></textarea></label>
+        <button class="send" type="submit">SEND</button>
+        <div class="cmsg" id="cmsg" role="status"></div>
+      </form>
+    </div>
+  </section>
+</div>
+
+<!-- 관리자 -->
+<div class="admin" id="admin" hidden>
+  <div class="admin-top"><h2>관리자 · STUDIO SAMPLE</h2><button class="btn ghost" id="toSite" type="button">← 사이트로</button></div>
+  <div class="atabs" role="tablist">
+    <button role="tab" data-at="img" aria-selected="true">이미지 관리</button>
+    <button role="tab" data-at="inq" aria-selected="false">문의 관리 <span id="inqCnt"></span></button>
+    <button role="tab" data-at="how" aria-selected="false">실제로는 이렇게</button>
+  </div>
+  <div class="apane" id="at-img">
+    <label class="drop" id="drop"><input type="file" id="file" accept="image/*" multiple hidden>
+      사진을 여기로 <b>끌어다 놓거나 눌러서</b> 올리세요. 여러 장 한 번에 돼요.<br><small>올릴 때 대표 색을 자동으로 뽑아 저장해요. 그래서 아카이브에서 사진이 뜨기 전에 그 색으로 칠해 둘 수 있어요.</small></label>
+    <div class="agrid" id="agrid"></div>
+    <p class="note">순서 바꾸기(←·→)가 아카이브 순서에 바로 반영돼요. 데모에서 올린 사진은 이 브라우저에만 저장돼요.</p>
+  </div>
+  <div class="apane" id="at-inq" hidden>
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap"><button class="btn ghost" id="csv" type="button">엑셀(CSV) 받기</button></div>
+    <div class="tablewrap"><table><thead><tr><th>받은 날</th><th>이름 / 브랜드</th><th>이메일</th><th>종류 · 촬영일</th><th>내용</th><th>상태</th><th></th></tr></thead><tbody id="inqRows"></tbody></table></div>
+  </div>
+  <div class="apane howto" id="at-how" hidden>
+    <h3>기술 스택</h3>
+    <ul>
+      <li><b>화면: Next.js (React)</b> — 피그마 디자인을 그대로 옮기고, 페이지마다 따로 불러와서 첫 화면이 빨리 떠요.</li>
+      <li><b>이미지·문의 DB: Supabase</b> — 사진 저장소와 DB가 함께 있어요. 업로드할 때 사진을 웹용 크기로 줄이고, 대표 색을 함께 저장해요.</li>
+      <li><b>관리자 화면: 한국어로 직접 제작</b> — 이 데모처럼 끌어다 놓기 업로드, 순서 바꾸기, 문의 상태 관리를 할 수 있어요.</li>
+      <li><b>배포: Cloudflare Pages</b> — 상업용도 무료이고, 사진이 전 세계에 빠르게 전달돼요.</li>
+    </ul>
+    <h3>이게 되면 성공</h3>
+    <ul>
+      <li>피그마와 PC·모바일 화면이 나란히 놓고 봐도 같다 (여백, 글자 크기, 효과).</li>
+      <li>로고 반전, 글자 띠, 7열 배열, 대표 색 상자가 사파리·크롬·삼성 인터넷에서 똑같이 동작한다.</li>
+      <li>사진 50장이 있어도 아카이브 첫 화면이 휴대폰 LTE에서 2초 안에 보인다.</li>
+      <li>관리자 화면에서 개발자 없이 사진을 올리고, 지우고, 순서를 바꿀 수 있다.</li>
+      <li>컨택트 문의가 빠짐없이 DB에 쌓이고, 새 문의가 오면 메일로 알림이 간다.</li>
+    </ul>
+    <h3>11월 5일까지 일정</h3>
+    <ul>
+      <li>1일차: 피그마 확인, 화면·컴포넌트 정리</li>
+      <li>2~4일차: 4개 탭과 상세 페이지 퍼블리싱, 인터랙션 구현</li>
+      <li>5~6일차: 관리자 화면(이미지·문의)과 DB 연결</li>
+      <li>7일차: 기기별 점검 / 8일차 이후: 수정 반영, 오픈</li>
+      <li>수정 요청은 매일 저녁 미리보기 주소에 반영해요. 작은 수정은 당일, 큰 수정은 다음 날까지 반영해요.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function(){
+  // ---------- 데이터 ----------
+  var PROJECTS = [
+    {title:'SS27 LOOKBOOK', client:'Label A (예시)', year:'2026', role:'Photography, Art direction'},
+    {title:'EDITORIAL — WIND', client:'Magazine B (예시)', year:'2026', role:'Photography'},
+    {title:'DENIM CAMPAIGN', client:'Brand C (예시)', year:'2025', role:'Photography, Retouch'},
+    {title:'PORTRAIT SERIES', client:'Personal', year:'2025', role:'Photography'},
+    {title:'STILL LIFE', client:'Brand D (예시)', year:'2025', role:'Photography, Styling'},
+    {title:'BRIDAL', client:'Atelier E (예시)', year:'2024', role:'Photography'}
+  ];
+  var IDS = [1,3,6,9,11,12,15,17,20,24,26,28,29,33,36,39,40,42,43,47,49,54,57,58,60,64,65,68,76,82];
+  var HS = [800,520,900,640,760,450,980,600,700,840];
+  var SEED = IDS.map(function(id, i){ var h = HS[i % HS.length]; return {key:'p' + id, src:'https://picsum.photos/id/' + id + '/600/' + h, thumb:'https://picsum.photos/id/' + id + '/8/8', w:600, h:h, project:i % PROJECTS.length, title:PROJECTS[i % PROJECTS.length].title}; });
+  var KEY = 'studio-demo-v1';
+  var db = (function(){ try { var s = JSON.parse(localStorage.getItem(KEY)); if (s && s.images) return s; } catch(e){} return {images:SEED.slice(), colors:{}, inquiries:[
+    {at:'2026-10-18 14:20', name:'김하린', brand:'Label A', email:'harin@example.com', type:'Lookbook', date:'2026-11-12', msg:'27SS 룩북 촬영 견적 문의드립니다. 착장 24벌 예정입니다.', status:'new'},
+    {at:'2026-10-15 09:05', name:'Lee J.', brand:'Magazine B', email:'lee@example.com', type:'Editorial', date:'', msg:'12월호 화보 촬영 가능 일정이 궁금합니다.', status:'done'}
+  ]}; })();
+  function save(){ try { localStorage.setItem(KEY, JSON.stringify(db)); return true; } catch(e){ return false; } }
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function toast(m){ var t = document.getElementById('toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(function(){ t.hidden = true; }, 1800); }
+  var slow = document.getElementById('slow');
+
+  // ---------- 대표 색 ----------
+  function avgColor(img){
+    var c = document.createElement('canvas'); c.width = c.height = 8;
+    var x = c.getContext('2d'); x.drawImage(img, 0, 0, 8, 8);
+    var d = x.getImageData(0, 0, 8, 8).data, r = 0, g = 0, b = 0, n = d.length / 4;
+    for (var i = 0; i < d.length; i += 4){ r += d[i]; g += d[i+1]; b += d[i+2]; }
+    return 'rgb(' + Math.round(r/n) + ',' + Math.round(g/n) + ',' + Math.round(b/n) + ')';
+  }
+  function colorOf(item, cb){
+    if (item.color) return cb(item.color);
+    if (db.colors[item.key]) return cb(db.colors[item.key]);
+    var im = new Image(); im.crossOrigin = 'anonymous';
+    im.onload = function(){ try { var c = avgColor(im); db.colors[item.key] = c; save(); cb(c); } catch(e){ cb('#cfc8bd'); } };
+    im.onerror = function(){ cb('#cfc8bd'); };
+    im.src = item.thumb || item.src;
+  }
+
+  // ---------- 타일 (대표 색 상자 → 사진) ----------
+  function tile(item, opts){
+    opts = opts || {};
+    var b = document.createElement(opts.button === false ? 'div' : 'button');
+    b.className = 'tile' + (opts.wide ? ' wide' : '');
+    if (b.tagName === 'BUTTON') b.type = 'button';
+    b.style.aspectRatio = item.w + ' / ' + item.h;
+    b.innerHTML = '<img alt="' + esc(item.title) + '"><span class="t">' + esc(item.title) + '</span>';
+    var img = b.querySelector('img');
+    colorOf(item, function(c){ b.style.setProperty('--c', c); });
+    var load = function(){ img.onload = function(){ img.classList.add('ok'); }; img.src = item.src; };
+    if (slow.checked) setTimeout(load, 900 + Math.random() * 2200); else load();
+    if (opts.onclick) b.onclick = opts.onclick;
+    return b;
+  }
+
+  // 7열 배열: 사진 비율을 미리 알고 있으니 가장 짧은 열에 차례로 넣어요
+  function masonry(el, items, cols){
+    el.innerHTML = '';
+    var n = cols || parseInt(getComputedStyle(el).getPropertyValue('--cols')) || 7;
+    var colEls = [], heights = [];
+    for (var i = 0; i < n; i++){ var c = document.createElement('div'); c.className = 'col'; el.appendChild(c); colEls.push(c); heights.push(0); }
+    items.forEach(function(it){
+      var k = heights.indexOf(Math.min.apply(null, heights));
+      colEls[k].appendChild(tile(it, {onclick:function(){ openDetail(it.project != null ? it.project : 0); }}));
+      heights[k] += it.h / it.w + 0.02;
+    });
+  }
+
+  // ---------- 페이지 ----------
+  var current = 'home';
+  function go(p){
+    current = p;
+    document.querySelectorAll('.page').forEach(function(s){ s.hidden = s.id !== 'page-' + p; });
+    document.querySelectorAll('.nav [data-page]').forEach(function(b){ b.classList.toggle('on', b.dataset.page === p || (p === 'detail' && b.dataset.page === 'archive')); });
+    document.getElementById('logo').hidden = p === 'contact';
+    if (p === 'archive') masonry(document.getElementById('archive'), db.images);
+    if (p === 'home') masonry(document.getElementById('homeStrip'), db.images.slice(0, 12), window.innerWidth <= 800 ? 2 : 4);
+    window.scrollTo(0, 0);
+    if (location.hash !== '#' + p && p !== 'detail') history.replaceState(null, '', '#' + p);
+  }
+  document.querySelectorAll('[data-page]').forEach(function(b){ b.addEventListener('click', function(){ go(b.dataset.page); }); });
+  var rt; window.addEventListener('resize', function(){ clearTimeout(rt); rt = setTimeout(function(){ if (current === 'archive' || current === 'home') go(current); }, 200); });
+
+  function openDetail(pi){
+    var p = PROJECTS[pi] || PROJECTS[0];
+    document.getElementById('dTitle').textContent = p.title;
+    document.getElementById('dMeta').innerHTML = '<dt>Client</dt><dd>' + esc(p.client) + '</dd><dt>Year</dt><dd>' + p.year + '</dd><dt>Role</dt><dd>' + esc(p.role) + '</dd>';
+    var box = document.getElementById('dImgs'); box.innerHTML = '';
+    db.images.filter(function(it){ return it.project === pi; }).forEach(function(it, i){ box.appendChild(tile(it, {button:false, wide: i % 3 === 0})); });
+    go('detail');
+  }
+
+  // HOME 히어로 슬라이드
+  var hero = document.getElementById('hero'), heroCap = document.getElementById('heroCap');
+  [24, 64, 82].forEach(function(id, i){ var im = new Image(); im.src = 'https://picsum.photos/id/' + id + '/1600/1000'; im.alt = ''; if (!i) im.className = 'on'; hero.appendChild(im); });
+  var hi = 0; setInterval(function(){ var ims = hero.querySelectorAll('img'); ims[hi].classList.remove('on'); hi = (hi + 1) % ims.length; ims[hi].classList.add('on'); heroCap.textContent = PROJECTS[hi].title; }, 4200);
+  heroCap.textContent = PROJECTS[0].title;
+
+  // ABOUT 글자 띠: 같은 내용을 두 번 이어 붙여 끊김 없이 반복
+  document.querySelectorAll('.track').forEach(function(t){ var s = ''; for (var i = 0; i < 6; i++) s += '<span>' + t.dataset.text + '</span>'; t.innerHTML = s + s; });
+  // FILM: GIF 자리 (프레임 넘김)
+  var film = document.getElementById('film');
+  [11, 12, 15, 17, 20, 26].forEach(function(id, i){ var im = new Image(); im.src = 'https://picsum.photos/id/' + id + '/640/800'; im.alt = ''; if (!i) im.className = 'on'; film.insertBefore(im, film.firstChild); });
+  var fi = 0; setInterval(function(){ var ims = film.querySelectorAll('img'); if (!ims.length) return; ims[fi].classList.remove('on'); fi = (fi + 1) % ims.length; ims[fi].classList.add('on'); }, 260);
+
+  // CONTACT → DB
+  document.getElementById('cform').onsubmit = function(e){
+    e.preventDefault();
+    var n = new Date(), pad = function(x){ return String(x).padStart(2, '0'); };
+    db.inquiries.unshift({at: n.getFullYear() + '-' + pad(n.getMonth()+1) + '-' + pad(n.getDate()) + ' ' + pad(n.getHours()) + ':' + pad(n.getMinutes()),
+      name: document.getElementById('cName').value.trim(), brand: document.getElementById('cBrand').value.trim(), email: document.getElementById('cEmail').value.trim(),
+      type: document.getElementById('cType').value, date: document.getElementById('cDate').value, msg: document.getElementById('cMsg').value.trim(), status:'new'});
+    save(); e.target.reset();
+    document.getElementById('cmsg').textContent = 'THANK YOU. 문의가 저장됐어요. 위쪽 "관리자 화면"에서 확인해 보세요.';
+  };
+
+  // ---------- 관리자 ----------
+  var site = document.getElementById('site'), admin = document.getElementById('admin'), logo = document.getElementById('logo');
+  document.getElementById('toAdmin').onclick = function(){ site.hidden = true; logo.hidden = true; admin.hidden = false; renderAdmin(); window.scrollTo(0, 0); };
+  document.getElementById('toSite').onclick = function(){ admin.hidden = true; site.hidden = false; go(current === 'detail' ? 'archive' : current); };
+  document.querySelectorAll('[data-at]').forEach(function(b){ b.onclick = function(){ document.querySelectorAll('[data-at]').forEach(function(x){ x.setAttribute('aria-selected', String(x === b)); }); ['img','inq','how'].forEach(function(k){ document.getElementById('at-' + k).hidden = k !== b.dataset.at; }); renderAdmin(); }; });
+
+  function renderAdmin(){
+    var g = document.getElementById('agrid');
+    g.innerHTML = db.images.map(function(it, i){ var c = it.color || db.colors[it.key] || '#ddd'; return '<div class="acard"><img class="ph" style="--c:' + c + '" src="' + esc(it.src) + '" alt="" loading="lazy"><div class="meta"><i class="sw" style="background:' + c + '" title="대표 색"></i><span>' + esc(it.title) + '</span></div><div class="acts"><button type="button" data-mv="-1" data-i="' + i + '" aria-label="앞으로">←</button><button type="button" data-mv="1" data-i="' + i + '" aria-label="뒤로">→</button><button type="button" data-del="' + i + '">삭제</button></div></div>'; }).join('');
+    g.querySelectorAll('[data-mv]').forEach(function(b){ b.onclick = function(){ var i = +b.dataset.i, j = i + (+b.dataset.mv); if (j < 0 || j >= db.images.length) return; var t = db.images[i]; db.images[i] = db.images[j]; db.images[j] = t; save(); renderAdmin(); }; });
+    g.querySelectorAll('[data-del]').forEach(function(b){ b.onclick = function(){ if (confirm('이 사진을 삭제할까요?')){ db.images.splice(+b.dataset.del, 1); save(); renderAdmin(); toast('삭제했어요'); } }; });
+    var nNew = db.inquiries.filter(function(q){ return q.status === 'new'; }).length;
+    document.getElementById('inqCnt').textContent = nNew ? '(' + nNew + ')' : '';
+    var rows = document.getElementById('inqRows');
+    rows.innerHTML = db.inquiries.length ? db.inquiries.map(function(q, i){ return '<tr><td>' + esc(q.at) + '</td><td>' + esc(q.name) + (q.brand ? '<br><small style="color:#888">' + esc(q.brand) + '</small>' : '') + '</td><td>' + esc(q.email) + '</td><td>' + esc(q.type) + (q.date ? '<br><small style="color:#888">' + esc(q.date) + '</small>' : '') + '</td><td style="max-width:280px;white-space:pre-wrap">' + esc(q.msg) + '</td><td><button type="button" class="st' + (q.status === 'new' ? ' new' : '') + '" data-tg="' + i + '">' + (q.status === 'new' ? '새 문의' : '답변 완료') + '</button></td><td><button type="button" class="st" data-qdel="' + i + '">삭제</button></td></tr>'; }).join('') : '<tr><td colspan="7" style="color:#999;text-align:center;padding:24px">문의가 없어요</td></tr>';
+    rows.querySelectorAll('[data-tg]').forEach(function(b){ b.onclick = function(){ var q = db.inquiries[+b.dataset.tg]; q.status = q.status === 'new' ? 'done' : 'new'; save(); renderAdmin(); }; });
+    rows.querySelectorAll('[data-qdel]').forEach(function(b){ b.onclick = function(){ if (confirm('이 문의를 삭제할까요?')){ db.inquiries.splice(+b.dataset.qdel, 1); save(); renderAdmin(); } }; });
+  }
+
+  // 업로드: 웹용 크기로 줄이고 대표 색을 뽑아 저장
+  function addFiles(files){
+    var list = [].slice.call(files).filter(function(f){ return /^image\//.test(f.type); });
+    if (!list.length) return;
+    var done = 0;
+    list.forEach(function(f){
+      var r = new FileReader();
+      r.onload = function(){
+        var im = new Image();
+        im.onload = function(){
+          var s = Math.min(1, 900 / im.width), c = document.createElement('canvas');
+          c.width = Math.round(im.width * s); c.height = Math.round(im.height * s);
+          c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+          var item = {key:'u' + Date.now() + Math.random().toString(36).slice(2, 6), src:c.toDataURL('image/jpeg', .8), w:c.width, h:c.height, project:0, title:f.name.replace(/\.[^.]+$/, '').slice(0, 30), color:avgColor(im)};
+          db.images.unshift(item);
+          if (!save()){ db.images.shift(); toast('데모 저장 공간이 꽉 찼어요. 실제 서비스는 서버에 저장해요'); }
+          if (++done === list.length){ renderAdmin(); toast(list.length + '장을 올렸어요. 아카이브 맨 앞에 보여요'); }
+        };
+        im.src = r.result;
+      };
+      r.readAsDataURL(f);
+    });
+  }
+  var drop = document.getElementById('drop');
+  document.getElementById('file').onchange = function(e){ addFiles(e.target.files); e.target.value = ''; };
+  ['dragenter','dragover'].forEach(function(t){ drop.addEventListener(t, function(e){ e.preventDefault(); drop.classList.add('over'); }); });
+  ['dragleave','drop'].forEach(function(t){ drop.addEventListener(t, function(e){ e.preventDefault(); drop.classList.remove('over'); }); });
+  drop.addEventListener('drop', function(e){ addFiles(e.dataTransfer.files); });
+
+  document.getElementById('csv').onclick = function(){
+    var head = ['받은 날','이름','브랜드','이메일','종류','촬영일','내용','상태'];
+    var lines = [head].concat(db.inquiries.map(function(q){ return [q.at, q.name, q.brand, q.email, q.type, q.date, q.msg, q.status === 'new' ? '새 문의' : '답변 완료']; }))
+      .map(function(r){ return r.map(function(v){ return '"' + String(v || '').replace(/"/g, '""') + '"'; }).join(','); });
+    var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + lines.join('\r\n')], {type:'text/csv'})); a.download = '문의목록.csv'; a.click();
+  };
+
+  slow.onchange = function(){ if (slow.checked){ db.colors = db.colors; } if (current === 'archive' || current === 'home') go(current); };
+
+  var start = (location.hash || '#home').slice(1);
+  go(['home','about','archive','contact'].indexOf(start) >= 0 ? start : 'home');
+})();
+</script>
+</body>
+</html>
