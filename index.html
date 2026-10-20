@@ -11,6 +11,7 @@
 <style>
 :root{--bg:#f4f2ee;--ink:#111;--ink-2:#555;--line:#d9d5ce;--accent:#111;color-scheme:light}
 *{box-sizing:border-box}
+html{background:#f4f2ee}
 html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font-family:"Inter Tight",Pretendard,-apple-system,"Apple SD Gothic Neo",sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
 button,input,select,textarea{font:inherit;color:inherit}
@@ -49,7 +50,7 @@ body{padding-bottom:64px}
 /* ABOUT: PPM 루프 */
 .about-top{padding:140px 24px 30px;max-width:900px;font-size:clamp(20px,2.4vw,32px);line-height:1.2;letter-spacing:-.02em}
 .marquee{overflow:hidden;white-space:nowrap;border-top:1px solid var(--ink);padding:10px 0}
-.marquee:last-of-type{border-bottom:1px solid var(--ink)}
+.marquee.last{border-bottom:1px solid var(--ink)}
 .track{display:inline-flex;font-weight:900;font-size:clamp(40px,8vw,120px);letter-spacing:-.04em;line-height:1;animation:toLeft 26s linear infinite}
 .track span{padding-right:.4em}
 .marquee.right .track{animation-name:toRight}
@@ -178,14 +179,14 @@ th{background:#fafafa;color:#666;font-weight:600}
       <p>Editorial, lookbook and campaign photography for fashion labels.</p>
       <p class="s">스크롤하면 왼쪽 위 로고가 따라와요. 로고가 사진이나 글자와 겹치면 '제외(exclusion)' 효과로 색이 반전돼요. 이 글자 위로 올려 보세요.</p>
     </div>
-    <div class="masonry" id="homeStrip" style="--cols:4"></div>
+    <div class="masonry" id="homeStrip"></div>
   </section>
 
   <section class="page" id="page-about" hidden>
     <div class="about-top">We build images with light, texture and silence. Studio Sample works with fashion labels on seasonal lookbooks, editorials and campaigns.</div>
     <div class="marquee right"><div class="track" data-text="LOOKBOOK — EDITORIAL — CAMPAIGN — "></div></div>
     <div class="marquee"><div class="track" data-text="PORTRAIT — STILL LIFE — BEAUTY — "></div></div>
-    <div class="marquee right"><div class="track" data-text="SEOUL — PARIS — TOKYO — "></div></div>
+    <div class="marquee right last"><div class="track" data-text="SEOUL — PARIS — TOKYO — "></div></div>
     <div class="film">
       <div class="film-box" id="film"><span class="tag">FILM DESIGN · AUTO PLAY</span></div>
       <div>
@@ -250,7 +251,7 @@ th{background:#fafafa;color:#666;font-weight:600}
       <li><b>화면: Next.js (React)</b> — 피그마 디자인을 그대로 옮겨요. 사진은 올릴 때 2~3가지 크기로 줄여 두고, 기기에 맞는 파일만 불러와요.</li>
       <li><b>이미지·문의 DB: Supabase</b> — 사진 저장소와 DB가 함께 있어요. 업로드할 때 사진을 웹용 크기로 줄이고, 대표 색을 함께 저장해요.</li>
       <li><b>관리자 화면: 한국어로 직접 제작</b> — 이 데모처럼 끌어다 놓기 업로드, 순서 바꾸기, 문의 상태 관리를 할 수 있어요.</li>
-      <li><b>배포: Cloudflare</b> — 상업용도 무료이고, 전 세계 서버에서 사이트가 빠르게 열려요.</li>
+      <li><b>배포: Cloudflare</b> — 사이트 화면은 정적 파일로 만들어 무료로 올려요. 관리자·문의 기능은 Supabase가 처리해요.</li>
     </ul>
     <h3>이게 되면 성공</h3>
     <ul>
@@ -288,11 +289,12 @@ th{background:#fafafa;color:#666;font-weight:600}
   var HS = [800,520,900,640,760,450,980,600,700,840];
   var SEED = IDS.map(function(id, i){ var h = HS[i % HS.length]; return {key:'p' + id, src:'https://picsum.photos/id/' + id + '/600/' + h, thumb:'https://picsum.photos/id/' + id + '/8/8', w:600, h:h, project:i % PROJECTS.length, title:PROJECTS[i % PROJECTS.length].title}; });
   var KEY = 'studio-demo-v1';
-  var db = (function(){ try { var s = JSON.parse(localStorage.getItem(KEY)); if (s && s.images) return s; } catch(e){} return {images:SEED.slice(), colors:{}, inquiries:[
+  var db = (function(){ try { var s = JSON.parse(localStorage.getItem(KEY)); if (s && Array.isArray(s.images)){ s.colors = s.colors || {}; s.inquiries = s.inquiries || []; return s; } } catch(e){} return {images:SEED.slice(), colors:{}, inquiries:[
     {at:'2026-10-18 14:20', name:'김하린', brand:'Label A', email:'harin@example.com', type:'Lookbook', date:'2026-11-12', msg:'27SS 룩북 촬영 견적 문의드립니다. 착장 24벌 예정입니다.', status:'new'},
     {at:'2026-10-15 09:05', name:'Lee J.', brand:'Magazine B', email:'lee@example.com', type:'Editorial', date:'', msg:'12월호 화보 촬영 가능 일정이 궁금합니다.', status:'done'}
   ]}; })();
   function save(){ try { localStorage.setItem(KEY, JSON.stringify(db)); return true; } catch(e){ return false; } }
+  var st; function saveSoon(){ clearTimeout(st); st = setTimeout(save, 500); }
   function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
   function toast(m){ var t = document.getElementById('toast'); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(function(){ t.hidden = true; }, 1800); }
   var slow = document.getElementById('slow');
@@ -309,7 +311,7 @@ th{background:#fafafa;color:#666;font-weight:600}
     if (item.color) return cb(item.color);
     if (db.colors[item.key]) return cb(db.colors[item.key]);
     var im = new Image(); im.crossOrigin = 'anonymous';
-    im.onload = function(){ try { var c = avgColor(im); db.colors[item.key] = c; save(); cb(c); } catch(e){ cb('#cfc8bd'); } };
+    im.onload = function(){ try { var c = avgColor(im); db.colors[item.key] = c; saveSoon(); cb(c); } catch(e){ cb('#cfc8bd'); } };
     im.onerror = function(){ cb('#cfc8bd'); };
     im.src = item.thumb || item.src;
   }
@@ -333,7 +335,10 @@ th{background:#fafafa;color:#666;font-weight:600}
   // 7열 배열: 사진 비율을 미리 알고 있으니 가장 짧은 열에 차례로 넣어요
   function masonry(el, items, cols){
     el.innerHTML = '';
+    el.style.removeProperty('--cols');
     var n = cols || parseInt(getComputedStyle(el).getPropertyValue('--cols')) || 7;
+    el.style.setProperty('--cols', n);
+    el.dataset.n = n;
     var colEls = [], heights = [];
     for (var i = 0; i < n; i++){ var c = document.createElement('div'); c.className = 'col'; el.appendChild(c); colEls.push(c); heights.push(0); }
     items.forEach(function(it){
@@ -345,26 +350,42 @@ th{background:#fafafa;color:#666;font-weight:600}
 
   // ---------- 페이지 ----------
   var current = 'home';
-  function go(p){
+  function homeCols(){ return window.innerWidth <= 800 ? 2 : 4; }
+  function archCols(){ var w = window.innerWidth; return w <= 480 ? 2 : w <= 800 ? 3 : w <= 1100 ? 5 : 7; }
+  function show(p){
     current = p;
     document.querySelectorAll('.page').forEach(function(s){ s.hidden = s.id !== 'page-' + p; });
     document.querySelectorAll('.nav [data-page]').forEach(function(b){ b.classList.toggle('on', b.dataset.page === p || (p === 'detail' && b.dataset.page === 'archive')); });
     document.getElementById('logo').hidden = p === 'contact';
-    if (p === 'archive') masonry(document.getElementById('archive'), db.images);
-    if (p === 'home') masonry(document.getElementById('homeStrip'), db.images.slice(0, 12), window.innerWidth <= 800 ? 2 : 4);
-    window.scrollTo(0, 0);
-    if (location.hash !== '#' + p && p !== 'detail') history.replaceState(null, '', '#' + p);
+    if (p === 'archive') masonry(document.getElementById('archive'), db.images, archCols());
+    if (p === 'home') masonry(document.getElementById('homeStrip'), db.images.slice(0, 12), homeCols());
   }
+  function go(p){
+    if (location.hash !== '#' + p){ history.pushState(null, '', '#' + p); }
+    route();
+  }
+  function route(){
+    var h = (location.hash || '#home').slice(1), m = h.match(/^detail-(\d+)$/);
+    if (m) renderDetail(+m[1]);
+    else show(['home','about','archive','contact'].indexOf(h) >= 0 ? h : 'home');
+    window.scrollTo(0, 0);
+  }
+  window.addEventListener('popstate', route);
   document.querySelectorAll('[data-page]').forEach(function(b){ b.addEventListener('click', function(){ go(b.dataset.page); }); });
-  var rt; window.addEventListener('resize', function(){ clearTimeout(rt); rt = setTimeout(function(){ if (current === 'archive' || current === 'home') go(current); }, 200); });
+  // 주소창이 접힐 때도 resize가 와요. 열 개수가 바뀔 때만 다시 배치하고 스크롤은 그대로 둬요.
+  var rt; window.addEventListener('resize', function(){ clearTimeout(rt); rt = setTimeout(function(){
+    if (current === 'archive' && +document.getElementById('archive').dataset.n !== archCols()) masonry(document.getElementById('archive'), db.images, archCols());
+    if (current === 'home' && +document.getElementById('homeStrip').dataset.n !== homeCols()) masonry(document.getElementById('homeStrip'), db.images.slice(0, 12), homeCols());
+  }, 200); });
 
-  function openDetail(pi){
+  function openDetail(pi){ go('detail-' + pi); }
+  function renderDetail(pi){
     var p = PROJECTS[pi] || PROJECTS[0];
     document.getElementById('dTitle').textContent = p.title;
     document.getElementById('dMeta').innerHTML = '<dt>Client</dt><dd>' + esc(p.client) + '</dd><dt>Year</dt><dd>' + p.year + '</dd><dt>Role</dt><dd>' + esc(p.role) + '</dd>';
     var box = document.getElementById('dImgs'); box.innerHTML = '';
     db.images.filter(function(it){ return it.project === pi; }).forEach(function(it, i){ box.appendChild(tile(it, {button:false, wide: i % 3 === 0})); });
-    go('detail');
+    show('detail');
   }
 
   // HOME 히어로 슬라이드
@@ -377,7 +398,7 @@ th{background:#fafafa;color:#666;font-weight:600}
   document.querySelectorAll('.track').forEach(function(t){ var s = ''; for (var i = 0; i < 6; i++) s += '<span>' + t.dataset.text + '</span>'; t.innerHTML = s + s; });
   // FILM: GIF 자리 (프레임 넘김)
   var film = document.getElementById('film');
-  [11, 12, 15, 17, 20, 26].forEach(function(id, i){ var im = new Image(); im.src = 'https://picsum.photos/id/' + id + '/640/800'; im.alt = ''; if (!i) im.className = 'on'; film.insertBefore(im, film.firstChild); });
+  [11, 12, 15, 17, 20, 26].forEach(function(id, i){ var im = new Image(); im.src = 'https://picsum.photos/id/' + id + '/640/800'; im.alt = ''; if (!i) im.className = 'on'; film.insertBefore(im, film.querySelector('.tag')); });
   var fi = 0; setInterval(function(){ var ims = film.querySelectorAll('img'); if (!ims.length) return; ims[fi].classList.remove('on'); fi = (fi + 1) % ims.length; ims[fi].classList.add('on'); }, 260);
 
   // CONTACT → DB
@@ -394,7 +415,7 @@ th{background:#fafafa;color:#666;font-weight:600}
   // ---------- 관리자 ----------
   var site = document.getElementById('site'), admin = document.getElementById('admin'), logo = document.getElementById('logo');
   document.getElementById('toAdmin').onclick = function(){ site.hidden = true; logo.hidden = true; admin.hidden = false; renderAdmin(); window.scrollTo(0, 0); };
-  document.getElementById('toSite').onclick = function(){ admin.hidden = true; site.hidden = false; go(current === 'detail' ? 'archive' : current); };
+  document.getElementById('toSite').onclick = function(){ admin.hidden = true; site.hidden = false; route(); };
   document.querySelectorAll('[data-at]').forEach(function(b){ b.onclick = function(){ document.querySelectorAll('[data-at]').forEach(function(x){ x.setAttribute('aria-selected', String(x === b)); }); ['img','inq','how'].forEach(function(k){ document.getElementById('at-' + k).hidden = k !== b.dataset.at; }); renderAdmin(); }; });
 
   function renderAdmin(){
@@ -414,25 +435,36 @@ th{background:#fafafa;color:#666;font-weight:600}
   function addFiles(files){
     var list = [].slice.call(files).filter(function(f){ return /^image\//.test(f.type); });
     if (!list.length) return;
-    var done = 0;
+    var ok = 0, fail = 0, full = 0;
+    function finish(){
+      if (ok + fail + full < list.length) return;
+      renderAdmin();
+      var m = ok ? ok + '장을 올렸어요. 아카이브 맨 앞에 보여요.' : '';
+      if (fail) m += ' ' + fail + '장은 열 수 없는 형식이에요(아이폰 HEIC는 JPG로 바꿔 주세요).';
+      if (full) m += ' ' + full + '장은 데모 저장 공간이 꽉 차서 못 올렸어요(실제 서비스는 서버에 저장해요).';
+      toast(m.trim());
+    }
     list.forEach(function(f){
       var r = new FileReader();
+      r.onerror = function(){ fail++; finish(); };
       r.onload = function(){
         var im = new Image();
+        im.onerror = function(){ fail++; finish(); };
         im.onload = function(){
-          var s = Math.min(1, 900 / im.width), c = document.createElement('canvas');
-          c.width = Math.round(im.width * s); c.height = Math.round(im.height * s);
+          var sc = Math.min(1, 900 / im.width), c = document.createElement('canvas');
+          c.width = Math.round(im.width * sc); c.height = Math.round(im.height * sc);
           c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
           var item = {key:'u' + Date.now() + Math.random().toString(36).slice(2, 6), src:c.toDataURL('image/jpeg', .8), w:c.width, h:c.height, project:0, title:f.name.replace(/\.[^.]+$/, '').slice(0, 30), color:avgColor(im)};
           db.images.unshift(item);
-          if (!save()){ db.images.shift(); toast('데모 저장 공간이 꽉 찼어요. 실제 서비스는 서버에 저장해요'); }
-          if (++done === list.length){ renderAdmin(); toast(list.length + '장을 올렸어요. 아카이브 맨 앞에 보여요'); }
+          if (save()){ ok++; renderAdmin(); } else { db.images.shift(); full++; }
+          finish();
         };
         im.src = r.result;
       };
       r.readAsDataURL(f);
     });
   }
+  ['dragover','drop'].forEach(function(t){ document.addEventListener(t, function(e){ e.preventDefault(); }); });
   var drop = document.getElementById('drop');
   document.getElementById('file').onchange = function(e){ addFiles(e.target.files); e.target.value = ''; };
   ['dragenter','dragover'].forEach(function(t){ drop.addEventListener(t, function(e){ e.preventDefault(); drop.classList.add('over'); }); });
@@ -446,10 +478,9 @@ th{background:#fafafa;color:#666;font-weight:600}
     var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + lines.join('\r\n')], {type:'text/csv'})); a.download = '문의목록.csv'; a.click();
   };
 
-  slow.onchange = function(){ if (slow.checked){ db.colors = db.colors; } if (current === 'archive' || current === 'home') go(current); };
+  slow.onchange = function(){ if (current === 'archive' || current === 'home' || current === 'detail') route(); };
 
-  var start = (location.hash || '#home').slice(1);
-  go(['home','about','archive','contact'].indexOf(start) >= 0 ? start : 'home');
+  route();
 })();
 </script>
 </body>
