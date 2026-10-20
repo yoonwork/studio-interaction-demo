@@ -58,7 +58,7 @@ body{padding-bottom:64px}
 @keyframes toRight{from{transform:translateX(-50%)}to{transform:translateX(0)}}
 .film{display:grid;grid-template-columns:1fr 1.2fr;gap:24px;padding:60px 24px;align-items:center}
 .film-box{position:relative;aspect-ratio:4/5;background:#cfc8bd;overflow:hidden}
-.film-box img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0}
+.film-box img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .35s}
 .film-box img.on{opacity:1}
 .film-box .tag{position:absolute;left:10px;top:10px;font-size:11px;letter-spacing:.15em;color:#fff;mix-blend-mode:difference}
 .film h3{font-size:13px;letter-spacing:.15em;margin:0 0 10px}
@@ -399,7 +399,7 @@ th{background:#fafafa;color:#666;font-weight:600}
   // FILM: GIF 자리 (프레임 넘김)
   var film = document.getElementById('film');
   [11, 12, 15, 17, 20, 26].forEach(function(id, i){ var im = new Image(); im.src = 'https://picsum.photos/id/' + id + '/640/800'; im.alt = ''; if (!i) im.className = 'on'; film.insertBefore(im, film.querySelector('.tag')); });
-  var fi = 0; setInterval(function(){ var ims = film.querySelectorAll('img'); if (!ims.length) return; ims[fi].classList.remove('on'); fi = (fi + 1) % ims.length; ims[fi].classList.add('on'); }, 260);
+  var fi = 0; setInterval(function(){ var ims = film.querySelectorAll('img'); if (!ims.length) return; ims[fi].classList.remove('on'); fi = (fi + 1) % ims.length; ims[fi].classList.add('on'); }, 900);
 
   // CONTACT → DB
   document.getElementById('cform').onsubmit = function(e){
