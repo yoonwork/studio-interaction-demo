@@ -431,7 +431,7 @@ svg{flex:none}
     <div class="marquee last" data-dir="1"><div class="track" data-words="SEOUL|ON LOCATION|IN STUDIO" data-img="E19|N3|L20"></div></div>
     <div class="film">
       <div class="film-box" id="film">
-        <div class="film-ctl"><span class="num" id="filmN">1 / 4</span><button type="button" id="filmBtn" aria-label="멈추기"><svg width="20" height="20"><use href="#i-pause"/></svg></button></div>
+        <div class="film-ctl"><span class="num" id="filmN">1 / 3</span><button type="button" id="filmBtn" aria-label="멈추기"><svg width="20" height="20"><use href="#i-pause"/></svg></button></div>
       </div>
       <div>
         <h3>Film design</h3>
@@ -581,10 +581,10 @@ svg{flex:none}
   // ---------- 사진 (Unsplash 무료 라이선스, 작가 표기) ----------
   // [키, 프로젝트, 사진 id, 가로, 세로, 대표 색, 작가, 사진 페이지]
   var PH = [
-  ['L3',0,'1568252748074-f9c8d964e834',240,345,'#c4c9ca','Khaled Ghareeb','ifzilsFFqOs'],
+  ['L3',0,'1568251863885-adcac989de24',240,351,'#b6b1ae','Khaled Ghareeb','upepKTbwm3A'],
   ['L4',0,'1568251723346-462c2abfd420',240,190,'#9b9793','Khaled Ghareeb','OjMiS43gEPo'],
-  ['L5',0,'1568251478083-32c27296c2c2',240,165,'#aca8a6','Khaled Ghareeb','qCCaBQ8b6lM'],
-  ['L6',0,'1568253743410-07dfe800b2df',240,353,'#aaa7a2','Khaled Ghareeb','yz2QedafgsU'],
+  ['L5',0,'1788119667207-fffeae50b488',240,300,'#686868','Vlad Ionita','py1bwtgwjLU'],
+  ['L6',0,'1790802222952-eb7e610de0d1',240,360,'#727272','Marina Nazina','S9WUsF-Is7c'],
   ['L12',0,'1568253130222-5fc7d0173808',240,376,'#bdb8b4','Khaled Ghareeb','XRDvrd5N5Ww'],
   ['L19',0,'1568251188392-ae32f898cb3b',240,162,'#91908f','Khaled Ghareeb','QN507MdnxRQ'],
   ['E5',1,'1662532577856-e8ee8b138a8b',240,163,'#5d4a80','Marjan Taghipour','1tjMpBTvFAA'],
@@ -616,10 +616,9 @@ svg{flex:none}
   ['E2',5,'1574015974293-817f0ebebb74',240,374,'#606061','Ayo Ogunseinde','UqT55tGBqzI'],
   ['L18',5,'1700575306910-b7016feddcd1',240,320,'#333333','Valeria Nikitina','1ufs4DiiVTw'],
   ['L20',5,'1700575306937-0855d570110d',240,320,'#9c9997','Valeria Nikitina','hEMF55c9y-g'],
-  ['N1',9,'1717765697689-bfe380461903',240,360,'#b7bdbb','Nick Pliahas','Kkof6AgLPIQ'],
-  ['P5',9,'1717765699217-2e169670f6e1',240,360,'#6e6962','Nick Pliahas','7Feuve0ipeg'],
-  ['P8',9,'1717765698239-88731a968d20',240,360,'#716f69','Nick Pliahas','7ErqsqczKng'],
-  ['N2',9,'1717765697681-5a160db970d5',240,360,'#7e7972','Nick Pliahas','EO-7zKHfhEo']
+  ['R1',9,'1763766274735-744ca07039d9',240,360,'#d0cdd4','Reza Shahriari','vso5MUIU8AY'],
+  ['R2',9,'1763766275114-d013bf8e3cff',240,362,'#7c7668','Reza Shahriari','kx60nDm8orY'],
+  ['R3',9,'1763766276188-135ebab92957',240,379,'#3a3a36','Reza Shahriari','E6SWs7N-mHU']
   ].map(function(a){ return {key:a[0], project:a[1], id:a[2], w:a[3], h:a[4], c:a[5], by:a[6], slug:a[7]}; });
   var BYKEY = {}; PH.forEach(function(p){ BYKEY[p.key] = p; });
 
@@ -641,7 +640,7 @@ svg{flex:none}
   function creditHtml(it){ return it.by ? 'Photo: <a href="' + pageUrl(it) + '" target="_blank" rel="noopener">' + esc(it.by) + '</a> / Unsplash' : '관리자에서 올린 사진'; }
 
   // ---------- 저장 ----------
-  var KEY = 'studio-demo-v2';
+  var KEY = 'studio-demo-v3';
   function seed(){
     return {images:PH.filter(function(p){ return p.project !== 9; }).map(function(p){ return {key:p.key, project:p.project, id:p.id, w:p.w, h:p.h, c:p.c, by:p.by, slug:p.slug}; }),
       inquiries:[
@@ -802,7 +801,7 @@ svg{flex:none}
   }
   tracks.forEach(function(tr){ if (tr.dir > 0) tr.x = -1; });
   window.addEventListener('scroll', function(){ var y = window.scrollY; if (current === 'about' && !reduce) boost = Math.min(6, boost + Math.abs(y - lastY) / 40); lastY = y; }, {passive:true});
-  var film = $('film'), FILM = ['N1','P5','P8','N2'], fi = 0, filmT = null, filmPlay = !reduce;
+  var film = $('film'), FILM = ['R1','R2','R3'], fi = 0, filmT = null, filmPlay = !reduce;
   FILM.forEach(function(k, i){ var it = BYKEY[k], im = new Image(); im.alt = i ? '' : '필름 컷'; im.loading = 'lazy'; im.src = U(it.id, 900, 1350); if (!i) im.className = 'on'; film.insertBefore(im, film.querySelector('.film-ctl')); });
   function filmStep(){ var ims = film.querySelectorAll('img'); ims[fi].classList.remove('on'); fi = (fi + 1) % ims.length; ims[fi].classList.add('on'); $('filmN').textContent = (fi + 1) + ' / ' + ims.length; }
   function filmSync(){ clearInterval(filmT); filmT = null; if (filmPlay && current === 'about' && !document.hidden) filmT = setInterval(filmStep, 620);
